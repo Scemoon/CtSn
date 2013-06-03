@@ -3,7 +3,7 @@
 #reboot cycle testing
 #author:Scemoon
 #mail:mengsan8325150@gmail.com
-#description:
+#description: PC OR SEVER REBOOT TEST
 
 import sys
 import os
