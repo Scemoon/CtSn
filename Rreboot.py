@@ -10,7 +10,7 @@ import os
 import getopt
 import commands
 import time
-from exmodules import *
+from pexpect import *
 
 TIMES=2
 INTERVAL=10
