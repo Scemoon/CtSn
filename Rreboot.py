@@ -78,9 +78,15 @@ options:
             print "HOST IP不通，请检查您的IP地址"
             self.Usage()
 
-    def Reboot(self):
-            pass
-
+    def Reboot(self,cmd='reboot'):
+        try:
+            s = pxssh.pxssh()
+            s.login(self.HOST,'root',self.PASSWORD)
+            s.sendline(cmd)
+        except pxssh.ExceptionPxssh,e:
+            print str(e)
+            print "pxssh failed on login."
+            
     def MonHost(self):
         i = 1
         while i < sys.maxinit:
@@ -93,19 +99,17 @@ options:
     def Run(self):
         i = 1
         while i <= self.TIMES:
+            time.sleep(self.INTERVAL)
             Tstatus = self.Rping()
             print "第%d次重启：    %s" % (i,Tstatus)
             if Tstatus == True:
-                time.sleep(self.INTERVAL)
+                TOTAL["PASS"]=TOTAL["PASS"]+1
                 self.Reboot()
             else:
+                TOTAL["FAIL"]=TOTAL["FAIL"]+1
                 print "远程主机重启失败，请手动去重启"
                 if self.MonHost()==True:
                     self.Reboot()
-                    i = i + 1
-                else:
-                    print "太久了，重测吧熊帝！！！！"
-                    sys.exit()
             i = i + 1
 
     def main(self):
@@ -116,9 +120,12 @@ options:
         self.Reboot()
         time.sleep(self.INTERVAL)
         self.Run()
+        print "统计："
+        print "PASS:%d FAIL:%d" %(TOTAL["PASS"],TOTAL["FAIL"])
         print "-----------------------------------------------------------"
         print "TEST END"
 
 if __name__ == '__main__':
     boot = Boot(TIMES,INTERVAL,HOST)
     boot.main()
+    
