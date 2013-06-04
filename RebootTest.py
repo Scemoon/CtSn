@@ -11,69 +11,67 @@ import ConfigParser
 numberfile='/tmp/number.txt'
 TIMES = 50 
 INTERVAL = 180
-WTIME = 20
 
 class ReBoot:
     def __init__(self,numberfile,TIMES,INTERVAL):
         self.file = numberfile
         self.TIMES = TIMES
+        self.TIME = None
+        self.FAIL = 0
+        self.TRUE = 0
         self.INTERVAL = INTERVAL
-        self.FileExists()
         self.ParserInit()
         
     #判断文件是否存在，不存在创建文件，并写入信息
     def FileExists(self):
         if not os.path.exists(self.file):
             os.makedirs(self.file)
+            self.FileWrite()
         else:
-            pass
+            self.FileRead()
         
-    def Filerw(self):
-        pass
-        self.
+    def FileWrite(self):
+        self.cf.add_section("REBOOT")
+        self.cf.set("REBOOT", "TIMES", self.TIMES)
+        self.cf.set("REBOOT", "TIME",self.TIME)
+        self.cf.set("REBOOT", "FAIL",self.FAIL)
+        self.cf.set("REBOOT", "TRUE",self.TRUE)
+        self.cf.write(self.file,'w')
     
+    def FileRead(self):
+        self.cf.read(self.file)
+        self.TIMES = self.cf.get("REBOOT", "TIMES")
+        self.TIME =  self.cf.get("REBOOT", "TIME")
+        self.FAIL = self.cf.set("REBOOT", "FAIL")
+        self.TRUE = self.cf.set("REBOOT", "TRUE")
     #读写文件方法定义
     def ParserInit(self):
         self.cf=ConfigParser.ConfigParser()
-        self.cf.read(self.file)  
+      
+    def TimeStamp(self):
+        return time.mktime(time.localtime())
+        
+    def run(self):
+        self.FileExists()
+        if int(self.TIMES) <0:
+            sys.exit()
+        if self.cf.get("REBOOT", self.TIME) == None:
+            self.cf.set("REBOOT", "TIME", self.TimeStamp())
+            os.system("uptime")
+        nowtime = self.TimeStamp()
+        diffence = float(nowtime) - float(self.TIME)
+        if diffence > self.INTERVAL:
+            self.FAIL = int(self.FAIL) + 1
+        else:
+            self.TRUE = int(self.TRUE) + 1
+        self.TIMES = int(self.TIMES) - 1
+        self.cf.set("REBOOT", "TIMES", self.TIME)
+        self.cf.set("REBOOT", "TIME", self.TimeStamp())
+        self.cf.set("REBOOT", "FAIL",self.FAIL)
+        self.cf.set("REBOOT", "TRUE",self.TRUE)
+        if int(self.TIMES) !=0:
+            os.system('uptime')
         
 
-
-def _read_number():
-    fr=open(NUMBER_FILE,'r')
-    line=fr.readline()
-    if len(line)>=1:
-        return int(line.strip())
-    else:
-        fr.close()
-        _write_number(number)
-        _reboot()
-    fr.close()
-def _write_number(NUMBER):
-    fw=open(NUMBER_FILE,'w')
-    fw.write(NUMBER)
-    fw.close()
-
-
-def _file_check():
-    return os.path.isfile(NUMBER_FILE)
-
-
-def _reboot():
-    file_stat=_file_check()
-    if file_stat==False:
-        _write_number(number)
-        time.sleep(time)
-        os.system("reboot")
-    else:
-        NUMBER=_read_number()
-        if NUMBER >= 1:
-            NUMBER = NUMBER - 1
-            _write_number(str(NUMBER))
-            time.sleep(time)
-            os.system("reboot")
-        else:
-            os.system('exit')
-
 if __name__=="__main__":
-    _reboot()
+    R = ReBoot(numberfile,TIMES,INTERVAL)
