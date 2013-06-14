@@ -143,8 +143,7 @@ options:
         self.optparser()
         self.TestBefore()
         self.logger.info("TEST BEGIN")
-        self.logger.info("-----------------------------------------------------------")
-        self.logger.info("总共重启%d次" % self.TIMES)
+        print "-----------------------------------------------------------"
         self.Reboot('reboot')
         self.Run()
         print 
@@ -152,9 +151,10 @@ options:
         print "======"
         print "统计："
         print "======"
+        print "总共重启%d次" % TIMES
         print "PASS:%d    FAIL:%d" %(TOTAL["PASS"],TOTAL["FAIL"])
         print "===================================="
-        self.logger.info("-----------------------------------------------------------")
+        "-----------------------------------------------------------"
         self.logger.info("TEST END")
 
 if __name__ == '__main__':
