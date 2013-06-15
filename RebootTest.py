@@ -36,7 +36,7 @@ class ReBoot:
         self.cf.set("REBOOT", "TIME",self.TIME)
         self.cf.set("REBOOT", "FAIL",self.FAIL)
         self.cf.set("REBOOT", "TRUE",self.TRUE)
-        #self.cf.write(self.file)
+        self.cf.write(self.file)
     
     def FileRead(self):
         self.cf.read(self.file)
@@ -56,8 +56,9 @@ class ReBoot:
         self.FileExists()
         if self.TIMES ==0:
             sys.exit()
-        if self.cf.getint("REBOOT", self.TIME) == None:
+        if self.cf.get("REBOOT", self.TIME) == None:
             self.cf.set("REBOOT", "TIME", self.TimeStamp())
+            self.cf.write(self.file)
             os.system("uptime")
         nowtime = self.TimeStamp()
         diffence = float(nowtime) - float(self.TIME)
@@ -71,7 +72,7 @@ class ReBoot:
         self.cf.set("REBOOT", "TIME", self.TimeStamp())
         self.cf.set("REBOOT", "FAIL",self.FAIL)
         self.cf.set("REBOOT", "TRUE",self.TRUE)
-
+        self.cf.write(self.file)
         os.system('uptime')
         
 
