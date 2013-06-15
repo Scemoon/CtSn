@@ -40,10 +40,10 @@ class ReBoot:
     
     def FileRead(self):
         self.cf.read(self.file)
-        self.TIMES = self.cf.get("REBOOT", "TIMES")
-        self.TIME =  self.cf.get("REBOOT", "TIME")
-        self.FAIL = self.cf.set("REBOOT", "FAIL")
-        self.TRUE = self.cf.set("REBOOT", "TRUE")
+        self.TIMES = self.cf.getint("REBOOT", "TIMES")
+        self.TIME =  self.cf.getint("REBOOT", "TIME")
+        self.FAIL = self.cf.getint("REBOOT", "FAIL")
+        self.TRUE = self.cf.getint("REBOOT", "TRUE")
     #读写文件方法定义
     def ParserInit(self):
         self.cf=ConfigParser.ConfigParser()
@@ -54,24 +54,25 @@ class ReBoot:
         
     def run(self):
         self.FileExists()
-        if int(self.TIMES) <0:
+        if self.TIMES ==0:
             sys.exit()
-        if self.cf.get("REBOOT", self.TIME) == None:
+        if self.cf.getint("REBOOT", self.TIME) == None:
             self.cf.set("REBOOT", "TIME", self.TimeStamp())
             os.system("uptime")
         nowtime = self.TimeStamp()
         diffence = float(nowtime) - float(self.TIME)
         if diffence > self.INTERVAL:
-            self.FAIL = int(self.FAIL) + 1
+            self.FAIL = self.FAIL + 1
+            self.TIMES = self.TIMES - 1
         else:
-            self.TRUE = int(self.TRUE) + 1
+            self.TRUE = self.TRUE + 1
         self.TIMES = int(self.TIMES) - 1
         self.cf.set("REBOOT", "TIMES", self.TIME)
         self.cf.set("REBOOT", "TIME", self.TimeStamp())
         self.cf.set("REBOOT", "FAIL",self.FAIL)
         self.cf.set("REBOOT", "TRUE",self.TRUE)
-        if int(self.TIMES) !=0:
-            os.system('uptime')
+
+        os.system('uptime')
         
 
 if __name__=="__main__":
