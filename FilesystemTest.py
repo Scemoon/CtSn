@@ -7,10 +7,11 @@ import os,sys
 import commands
 import subprocess
 import getopt
+import re
 
 DEVICE = None
 FSTYPE = None 
-FSTUPE = ('ext2','ext3','ext4')
+FSTUPE = ('ext2','ext3','ext4','ntfs','vfat','msdos','xfs','jfs','gfs2','btrfs')
 
 class FsTest:
     def __init__(self,DEVICE,FSTYPE):
@@ -65,16 +66,16 @@ options:
     def MountFs(self,extar = ''):
         cmd = 'mount %s %s %s ' %(extar,self.DEVICE,self.mpoint)
         if self.RunShell(cmd) != 0:
-            raise TestError("挂在%s分区失败" % self.DEVICE)
+            raise TestError("挂载%s分区失败" % self.DEVICE)
         
     def IsMount(self):
         try:
-            mount_output = subprocess.Popen(["mount"],stdout=subprocess.PIPE)
-            for line in mount_output.stdout.readlines():
-                if line.find(self.DEVICE) != -1:
-                    return True
-                else:
-                    return False
+            output = commands.getoutput('mount')
+            p = re.compile(r'%s' % self.DEVICE)
+            if p.search(output) ==None:
+                return False
+            else:
+                return True
         except Exception,e:
             print str(e)
             raise 
@@ -86,7 +87,7 @@ options:
         #创建中文目录
             os.mkdir(chinesepath)
         #创建中文文件
-            os.mkdir(chinesefile)
+            os.mknod(chinesefile)
         except Exception,e:
             print str(e)
             raise TestError("不支持中文")
@@ -106,7 +107,8 @@ options:
         
     def UnMount(self):
         try:
-            cmd = 'unmount %s' % self.mpoint
+            cmd = 'umount %s' % self.mpoint
+            self.RunShell(cmd)
         except Exception,e:
             print str(e)
             raise
@@ -115,15 +117,26 @@ options:
         try:
             if self.IsMount() == True:
                 self.UnMount()
-            print "%s Test Begin\n------------------------------------------------" % fstype
-            self.MkFs(fstype)
-            print "创建%s文件系统成功" % fstype
-            self.MountFs()
-            print "挂载%s分区到%s成功" %(self.DEVICE,self.mpoint)
+            
+            if fstype == 'xfs':
+                self.MkFs(fstype,' -f ')
+            elif fstype == 'jfs':
+		self.MkFs(fstype,'','echo Y|')
+
+            elif fstype == 'gfs2':
+                self.MkFs(fstype,' -p lock_nolock ','echo y| ')
+            else:
+                self.MkFs(fstype)
+            #print "创建%s文件系统成功" % fstype
+            if fstype in ('vfat','msdos'):
+                self.MountFs(' -o utf8 ')
+            else:
+                self.MountFs()
+            #print "挂载%s分区到%s成功" %(self.DEVICE,self.mpoint)
             if self.IsMount() == False:
                 raise TestError("%s挂在失败" % fstype)
             self.ChineseTest()
-            print "%s编码测试PASS" % fstype
+            #print "%s编码测试PASS" % fstype
             self.UnMount()
             print "%s TEST PASS" % fstype
         except TestError,e:
@@ -132,27 +145,27 @@ options:
         except Exception,e:
             #print str(e)
             print "%s TEST FAIL" % fstype
-        finally:
-            print "%s Test END\n------------------------------------------------" % fstype
+
     
     def main(self):
         self.optparser(sys.argv)
         if self.DEVICE == None:
             print "分区设备不能为空，请指定分区设备"
             self.Usage()
-        
+        print "Test Begin\n------------------------------------------------" 
         if self.FSTYPE == None:
             for fstype in FSTUPE:
                 self.run(fstype)
         else:
             self.run(self.FSTYPE)
-        
+        print "------------------------------------------------" 
+        print "Test END"
 class TestError(Exception):
     def __init__(self,output):
         self.output = output
     
     def __str__(self):
-        print self.output
+        return self.output
         
 if __name__ == '__main__':
     ft = FsTest(DEVICE,FSTYPE)

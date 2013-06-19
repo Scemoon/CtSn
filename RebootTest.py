@@ -58,7 +58,7 @@ class ReBoot:
             sys.exit()
         if self.OTIME == 0:
             self.cf.set("REBOOT", "TIME", self.TimeStamp())
-            self.cf.write(open(self.file),'w')
+            self.cf.write(open(self.file,'w'))
             os.system("reboot")
         else:
             nowtime = self.TimeStamp()
