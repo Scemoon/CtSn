@@ -5,7 +5,7 @@ import os,sys,getopt
 
 
 file = 'source.file'
-Test_tupe = ('python','perl','c','java')
+Test_tupe = ('python','perl','c','java','c++','lua')
 
 class LauageTest:
     def __init__(self,file):
@@ -30,7 +30,7 @@ options:
                 if opt in ('-v','--version'):
                     print "Version1.0"
                     sys.exit()
-                if opt == '-l':
+                if opt in( '-l','--language'):
                     self.LANGUAGE= value
                 
         except Exception,e:
@@ -56,29 +56,35 @@ options:
             if status != 0:
                 raise TestError(output)
         except Exception,e:
-            pass 
+            raise TestError(output)
         
     def CompileFile(self,TEST):
         if TEST == "c":
             cmd = "gcc -o Hello %s" % self.file
+            self.RunShell(cmd)
+        if TEST == "c++":
+            cmd = "g++ -o Hello %s" % self.file
             self.RunShell(cmd)
         if TEST == "java":
             cmd = "javac %s" % self.file
             self.RunShell(cmd)
     
     def RunTest(self,TEST):
-        if TEST in ("python","perl"):
+        if TEST in ("python","perl",'lua'):
             content = '''print "Hello World!"
             '''
             cmd = "%s %s" % (TEST,self.file)
-        elif TEST == "c":
+        elif TEST in ("c","c++"):
             self.file = "hello.c"
             content ='''#include <stdio.h>
-void main()
+int main()
 {
    printf("hello world!\\n");
-  
-} '''
+   return 0;
+
+}
+
+'''
             cmd = "./Hello"
             
         elif TEST == "java":
@@ -93,11 +99,11 @@ public static void main(String[] args) {
             raise TestError("HAVE NO THE LANGUAGE,%s" % TEST) 
                 
         self.TestFile(content)
-        if TEST in ('c','java'):
+        if TEST in ('c','c++','java'):
             self.CompileFile(TEST)
         self.RunShell(cmd)
         self.RemoveFile(self.file)
-        if TEST == 'c':
+        if TEST in('c','c++'):
             self.RemoveFile('Hello')
         if TEST == "java":
             self.RemoveFile('Hello.class')
@@ -107,11 +113,11 @@ public static void main(String[] args) {
             self.RunTest(TEST)
             print "%6s TEST PASS" % TEST
         except TestError,e:
-            print str(e)
             print "%6s TEST FAIL" % TEST
+            print str(e)
         except Exception,e:
-            print str(e)
             print "%6s TEST FAIL" % TEST
+            print str(e)
             
             
     def main(self):

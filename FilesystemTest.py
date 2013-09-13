@@ -11,7 +11,7 @@ import re
 
 DEVICE = None
 FSTYPE = None 
-FSTUPE = ('ext2','ext3','ext4','ntfs','vfat','msdos','xfs','jfs','gfs2','btrfs')
+FSTUPE = ('ext2','ext3','ext4','ntfs','vfat','msdos','xfs','jfs','gfs2','btrfs','ext4dev')
 
 class FsTest:
     def __init__(self,DEVICE,FSTYPE):
@@ -89,8 +89,8 @@ options:
         #创建中文文件
             os.mknod(chinesefile)
         except Exception,e:
-            print str(e)
             raise TestError("不支持中文")
+            print str(e)
         if not os.path.isdir(chinesepath):
             raise TestError("创建中文目录失败")
         if not os.path.isfile(chinesefile):
@@ -101,8 +101,8 @@ options:
             fp.write("中文汉字 ")
             fp.close()
         except IOError,e:
-            print str(e)
             raise TestError("写入中文出错")
+            print str(e)
         
         
     def UnMount(self):
@@ -140,11 +140,11 @@ options:
             self.UnMount()
             print "%s TEST PASS" % fstype
         except TestError,e:
+            print "%s TEST FAIL" % fstype
             print str(e)
-            print "%s TEST FAIL" % fstype
         except Exception,e:
-            #print str(e)
             print "%s TEST FAIL" % fstype
+            print str(e)
 
     
     def main(self):

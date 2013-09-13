@@ -13,7 +13,7 @@ import logging
 from pexpect import pxssh
 
 
-TIMES=2
+TIMES=50
 INTERVAL=180
 HOST=None
 PASSWORD = None
@@ -50,7 +50,7 @@ options:
         sys.exit()
 
     def optparser(self,args=sys.argv):
-        opts, args = getopt.getopt(args[1:],"hvqdH:p:i:T:",["help","version","host","password","interval","--times"])
+        opts, args = getopt.getopt(args[1:],"hvdH:p:i:T:",["help","version","host","password","interval","--times,--debug"])
         try:
             for opt,value in opts:
                 if opt in ('-h','--help'):
@@ -63,9 +63,9 @@ options:
                 if opt in ('-p','--password'):
                     self.PASSWORD = value    
                 if opt in ( '-i','--interval'):
-                    self.INTERVAL = value
+                    self.INTERVAL = int(value)
                 if opt in ('-T','--times'):
-                    self.TIMES = value
+                    self.TIMES = int(value)
                 if opt in ('-d','--debug'):
                     LOGLEVEL=logging.DEBUG
                     
@@ -106,6 +106,7 @@ options:
         except pxssh.ExceptionPxssh,e:
             self.logger.debug(e)
             self.logger.error("pxssh failed on login.")
+            sys.exit()
         except Exception,e:
             self.logger.debug(e)
             
@@ -115,10 +116,10 @@ options:
         while i < sys.maxint:
             status = self.Rping()
             if status == True:
-                return True
                 self.logger.info("系统已经重启")
                 break
             i = i + 1
+        return True
 
     def Run(self):
         i = 1
@@ -134,9 +135,10 @@ options:
             else:
                 TOTAL["FAIL"]=TOTAL["FAIL"]+1
                 self.logger.error("远程主机重启失败，请手动去重启")
-                if self.MonHost()==True:
-                    if i != self.TIMES:
-                        self.Reboot()
+	        if i==self.TIMES：
+		    break
+		if self.MonHost()==True:
+                    self.Reboot()
             i = i + 1
 
     def main(self):
@@ -151,7 +153,7 @@ options:
         print "======"
         print "统计："
         print "======"
-        print "总共重启%d次" % TIMES
+        print "总共重启%d次" % self.TIMES
         print "PASS:%d    FAIL:%d" %(TOTAL["PASS"],TOTAL["FAIL"])
         print "===================================="
         print "-----------------------------------------------------------"
