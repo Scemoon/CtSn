@@ -135,7 +135,7 @@ options:
             else:
                 TOTAL["FAIL"]=TOTAL["FAIL"]+1
                 self.logger.error("远程主机重启失败，请手动去重启")
-	        if i==self.TIMES：
+	        if i==self.TIMES:
 		    break
 		if self.MonHost()==True:
                     self.Reboot()
